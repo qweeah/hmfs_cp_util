@@ -12,14 +12,20 @@ class CpConnection{
 	static const int MAX_INFO_LINE_LEN=300;
 	char info_line[MAX_INFO_LINE_LEN];
 	FILE* info_file;
+
 public:
 	CpConnection(unsigned long phys_addr);
 	~CpConnection();
 
 	int connect();
+
 	void getCP();
-	bool getCP(unsigned int version);
+	bool getCP(unsigned int version);	
+
+	void getSSA(unsigned int segno);
+
 	char* getPath();
 };
 
+void waitEnter();
 #endif

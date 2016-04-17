@@ -22,11 +22,12 @@ int CpConnection::connect(){
 		printf("Cannot access cp_info file.\n");
 		return 0;
 	}
-	
 }
+
 //get all checkpoint info
 void CpConnection::getCP(){
-	if(!this->info_file){
+	this->info_file = fopen(info_path, "r+");
+	if(!this->info_file) {
 		printf("Cannot access cp_info file.\n");
 		return;
 	}
@@ -45,12 +46,15 @@ void CpConnection::getCP(){
 			printf("%s", this->info_line);
 		}
 	}
+	fclose(this->info_file);
 }
-//get the checkpoint info with the version number
+
+//get checkpoint info with the version number
 bool CpConnection::getCP(unsigned int version){
 	unsigned int cur_ver;
-        bool found = false;
-	if(!this->info_file){
+	bool found = false;
+	this->info_file = fopen(info_path, "r+");
+	if(!this->info_file) {
 		printf("Cannot access cp_info file.\n");
 		return false;
 	}
@@ -71,19 +75,33 @@ bool CpConnection::getCP(unsigned int version){
 			}
 		}	
 	}
+	fclose(this->info_file);
 	return found;
+}
+
+//get SSA of <segno>th segment
+void CpConnection::getSSA(unsigned int segno) {
+	this->info_file = fopen(info_path, "r+");
+	if(!this->info_file) {
+		printf("Cannot access cp_info file.\n");
+		return;
+	}
+	fprintf(this->info_file, "ssa %u\n", segno);
+	fflush(this->info_file);
+
+	/* format info */
+	while(fgets(this->info_line, MAX_INFO_LINE_LEN, this->info_file)) {
+		if(strlen(this->info_line)!=1) {
+			printf("%s", this->info_line);
+		}
+	}
+	fclose(this->info_file);
 }
 char* CpConnection::getPath(){
 	return this->info_path;
 }
-int main(){
-	unsigned long phys_addr;
-	printf("Please input physical address:\n");
-	scanf("%ld", &phys_addr);
-	CpConnection *cpConn = new CpConnection(phys_addr);
-	puts(cpConn->getPath());
-	cpConn->connect();
-	cpConn->getCP(2);
-	delete cpConn;
-	return 0;
+void waitEnter(){
+	printf("\n--- Press ENTER to return ---\n");
+	while(getchar()!='\n');
+	getchar();
 }
