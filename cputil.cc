@@ -22,16 +22,57 @@ int CpConnection::connect(){
 		printf("Cannot access cp_info file.\n");
 		return 0;
 	}
-	/* test: send query & output*/
+	
+}
+//get all checkpoint info
+void CpConnection::getCP(){
+	if(!this->info_file){
+		printf("Cannot access cp_info file.\n");
+		return;
+	}
 	fputs("cp a", this->info_file);
 	fflush(this->info_file);
+
+	/* format info */
+	while(fgets(this->info_line, MAX_INFO_LINE_LEN, this->info_file)) {
+		if(!strncmp(this->info_line, "------",6)){
+			break;
+		}	
+		printf("%s", this->info_line);
+	}
 	while(fgets(this->info_line, MAX_INFO_LINE_LEN, this->info_file)) {
 		if(strlen(this->info_line)!=1) {
-			printf("%d:%s", strlen(this->info_line), this->info_line);
+			printf("%s", this->info_line);
 		}
-	}	
+	}
 }
+//get the checkpoint info with the version number
+bool CpConnection::getCP(unsigned int version){
+	unsigned int cur_ver;
+        bool found = false;
+	if(!this->info_file){
+		printf("Cannot access cp_info file.\n");
+		return false;
+	}
+	fputs("cp a", this->info_file);
+	fflush(this->info_file);
 
+	while(fgets(this->info_line, MAX_INFO_LINE_LEN, this->info_file)) {
+		if(found) {
+			if(!strncmp(this->info_line, "version", 7))
+				break;
+			printf("%s", this->info_line);
+		}
+		else {
+			if(!strncmp(this->info_line, "version",7)){
+				sscanf(this->info_line, "version: %u", &cur_ver);
+				if(cur_ver == version)
+					found = true;
+			}
+		}	
+	}
+	return found;
+}
 char* CpConnection::getPath(){
 	return this->info_path;
 }
@@ -42,6 +83,7 @@ int main(){
 	CpConnection *cpConn = new CpConnection(phys_addr);
 	puts(cpConn->getPath());
 	cpConn->connect();
+	cpConn->getCP(2);
 	delete cpConn;
 	return 0;
 }

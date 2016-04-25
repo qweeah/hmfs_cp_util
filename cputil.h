@@ -15,10 +15,11 @@ class CpConnection{
 public:
 	CpConnection(unsigned long phys_addr);
 	~CpConnection();
+
 	int connect();
+	void getCP();
+	bool getCP(unsigned int version);
 	char* getPath();
-
-
 };
 
 #endif
